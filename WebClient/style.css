@@ -1,0 +1,15 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+input:focus {
+    outline: none;
+}
+
+canvas {
+    max-height: 300px;
+}

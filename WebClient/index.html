@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InMemoryDB Benchmarking Client</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+
+    <!-- Header -->
+    <div class="max-w-5xl mx-auto">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-cyan-400">InMemoryDB</h1>
+            <p class="text-gray-400 mt-1">Web Benchmarking Client</p>
+        </div>
+
+        <!-- Auth Section -->
+        <div class="bg-gray-800 rounded-lg p-4 mb-6">
+            <h2 class="text-lg font-semibold text-yellow-400 mb-3">
+                Authentication
+            </h2>
+            <div class="flex gap-3 flex-wrap">
+                <input id="authUser" type="text" placeholder="Username"
+                    class="bg-gray-700 text-white px-3 py-2 rounded 
+                           border border-gray-600 focus:outline-none 
+                           focus:border-cyan-400 w-40">
+                <input id="authPass" type="password" placeholder="Password"
+                    class="bg-gray-700 text-white px-3 py-2 rounded 
+                           border border-gray-600 focus:outline-none 
+                           focus:border-cyan-400 w-40">
+                <button onclick="authenticate()"
+                    class="bg-cyan-600 hover:bg-cyan-500 px-4 py-2 
+                           rounded font-semibold transition">
+                    Connect
+                </button>
+                <span id="authStatus" class="py-2 text-gray-400">
+                    Not connected
+                </span>
+            </div>
+        </div>
+
+        <!-- Operations -->
+        <div class="bg-gray-800 rounded-lg p-4 mb-6">
+            <h2 class="text-lg font-semibold text-yellow-400 mb-3">
+                Operations
+            </h2>
+            <div class="flex gap-3 flex-wrap items-end">
+                <div>
+                    <label class="text-gray-400 text-sm block mb-1">Key</label>
+                    <input id="keyInput" type="text" placeholder="Enter key"
+                        class="bg-gray-700 text-white px-3 py-2 rounded 
+                               border border-gray-600 focus:outline-none 
+                               focus:border-cyan-400 w-40">
+                </div>
+                <div>
+                    <label class="text-gray-400 text-sm block mb-1">
+                        Value (SET only)
+                    </label>
+                    <input id="valueInput" type="text" placeholder="Enter value"
+                        class="bg-gray-700 text-white px-3 py-2 rounded 
+                               border border-gray-600 focus:outline-none 
+                               focus:border-cyan-400 w-40">
+                </div>
+                <button onclick="sendGet()"
+                    class="bg-green-600 hover:bg-green-500 px-4 py-2 
+                           rounded font-semibold transition">
+                    GET
+                </button>
+                <button onclick="sendSet()"
+                    class="bg-blue-600 hover:bg-blue-500 px-4 py-2 
+                           rounded font-semibold transition">
+                    SET
+                </button>
+                <button onclick="sendDel()"
+                    class="bg-red-600 hover:bg-red-500 px-4 py-2 
+                           rounded font-semibold transition">
+                    DEL
+                </button>
+                <button onclick="sendKeys()"
+                    class="bg-yellow-600 hover:bg-yellow-500 px-4 py-2 
+                           rounded font-semibold transition">
+                    KEYS
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Panel -->
+        <div class="bg-gray-800 rounded-lg p-4 mb-6">
+            <h2 class="text-lg font-semibold text-yellow-400 mb-3">
+                Last Result
+            </h2>
+            <div class="flex gap-6 flex-wrap">
+                <div>
+                    <p class="text-gray-400 text-sm">Result</p>
+                    <p id="resultValue" class="text-xl font-mono text-green-400">
+                        —
+                    </p>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">Response Time</p>
+                    <p id="resultTime" class="text-xl font-mono text-cyan-400">
+                        —
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Test -->
+        <div class="bg-gray-800 rounded-lg p-4 mb-6">
+            <h2 class="text-lg font-semibold text-yellow-400 mb-3">
+                Bulk Query Test
+            </h2>
+            <div class="flex gap-3 items-end flex-wrap">
+                <div>
+                    <label class="text-gray-400 text-sm block mb-1">
+                        Number of queries
+                    </label>
+                    <input id="bulkCount" type="number" value="100" min="1" 
+                           max="1000"
+                        class="bg-gray-700 text-white px-3 py-2 rounded 
+                               border border-gray-600 focus:outline-none 
+                               focus:border-cyan-400 w-32">
+                </div>
+                <button onclick="runBulk()"
+                    class="bg-purple-600 hover:bg-purple-500 px-4 py-2 
+                           rounded font-semibold transition">
+                    Run Bulk Test
+                </button>
+            </div>
+            <div id="bulkResults" class="mt-3 hidden">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                    <div class="bg-gray-700 rounded p-3">
+                        <p class="text-gray-400 text-sm">Queries</p>
+                        <p id="bulkCount2" class="text-xl font-mono 
+                                                   text-white">—</p>
+                    </div>
+                    <div class="bg-gray-700 rounded p-3">
+                        <p class="text-gray-400 text-sm">Avg Time</p>
+                        <p id="bulkAvg" class="text-xl font-mono 
+                                               text-cyan-400">—</p>
+                    </div>
+                    <div class="bg-gray-700 rounded p-3">
+                        <p class="text-gray-400 text-sm">Fastest</p>
+                        <p id="bulkMin" class="text-xl font-mono 
+                                               text-green-400">—</p>
+                    </div>
+                    <div class="bg-gray-700 rounded p-3">
+                        <p class="text-gray-400 text-sm">Slowest</p>
+                        <p id="bulkMax" class="text-xl font-mono 
+                                               text-red-400">—</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="bg-gray-800 rounded-lg p-4 mb-6">
+            <h2 class="text-lg font-semibold text-yellow-400 mb-3">
+                Session Stats
+            </h2>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="bg-gray-700 rounded p-3">
+                    <p class="text-gray-400 text-sm">Total Queries</p>
+                    <p id="statTotal" class="text-xl font-mono text-white">0</p>
+                </div>
+                <div class="bg-gray-700 rounded p-3">
+                    <p class="text-gray-400 text-sm">Avg Response</p>
+                    <p id="statAvg" class="text-xl font-mono 
+                                           text-cyan-400">—</p>
+                </div>
+                <div class="bg-gray-700 rounded p-3">
+                    <p class="text-gray-400 text-sm">Fastest</p>
+                    <p id="statFastest" class="text-xl font-mono 
+                                               text-green-400">—</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="bg-gray-800 rounded-lg p-4">
+            <h2 class="text-lg font-semibold text-yellow-400 mb-3">
+                Response Time Graph
+            </h2>
+            <canvas id="latencyChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

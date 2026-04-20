@@ -1,0 +1,3 @@
+admin:admin123
+alice:password1
+bob:password2
